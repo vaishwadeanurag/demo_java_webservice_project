@@ -14,7 +14,7 @@ from sqlalchemy import (create_engine,
                         Boolean)
 import datetime
 
-engine = create_engine('mysql://root:hackspace@localhost/flight_reservation_db', echo=True)
+engine = create_engine('mysql://root:@localhost/flight_reservation_db', echo=True)
 
 Base = declarative_base()
 
