@@ -14,10 +14,8 @@ from sqlalchemy import (create_engine,
                         Boolean)
 import datetime
 
-engine = create_engine('mysql://root:@localhost/flight_reservation_db')
+engine = create_engine('mysql://root:hackspace@localhost/flight_reservation_db', echo=True)
 
-session_maker = sessionmaker(bind=engine)
-session = session_maker()
 Base = declarative_base()
 
 
@@ -33,6 +31,21 @@ class User(Base):
     user_email = Column(String(300))
     user_password = Column(String(300))
     user_phone = Column(String(30))
+    active = Column(Boolean, default=True)
+    update_date = Column(DateTime, onupdate=datetime.datetime.now)
+    create_date = Column(DateTime, default=func.now())
+
+class LocationDetail(Base):
+
+    """
+    Strore Location information
+    """
+    __tablename__ = 'location'
+
+    location_idn = Column(Integer, primary_key=True, nullable=False)
+    location_name = Column(String(200))
+    created_by = Column(Integer, ForeignKey("user.user_idn"), nullable=False)
+    updated_by = Column(Integer, ForeignKey("user.user_idn"), nullable=False)
     active = Column(Boolean, default=True)
     update_date = Column(DateTime, onupdate=datetime.datetime.now)
     create_date = Column(DateTime, default=func.now())
@@ -61,22 +74,6 @@ class FlightDetail(Base):
     create_date = Column(DateTime, default=func.now())
 
 
-class LocationDetail(Base):
-
-    """
-    Strore Location information
-    """
-    __tablename__ = 'location'
-
-    location_idn = Column(Integer, primary_key=True, nullable=False)
-    location_name = Column(String(200))
-    created_by = Column(Integer, ForeignKey("user.user_idn"), nullable=False)
-    updated_by = Column(Integer, ForeignKey("user.user_idn"), nullable=False)
-    active = Column(Boolean, default=True)
-    update_date = Column(DateTime, onupdate=datetime.datetime.now)
-    create_date = Column(DateTime, default=func.now())
-
-
 class ReservationDetails(Base):
 
     """
@@ -84,7 +81,7 @@ class ReservationDetails(Base):
     """
     __tablename__ = 'reservation_details'
     reservation_idn = Column(Integer, primary_key=True)
-    flight_no = Column(Integer, ForeignKey("FlightDetail.flight_idn"), nullable=False)
+    flight_no = Column(Integer, ForeignKey("flight_detail.flight_idn"), nullable=False)
     total_fare = Column(Float)
     reserved_by = Column(Integer, ForeignKey("user.user_idn"), nullable=False)
     active = Column(Boolean, default=True)
@@ -101,3 +98,6 @@ class PassengerDetails(Base):
     reservation_idn = Column(Integer, ForeignKey("reservation_details.reservation_idn"), nullable=False)
     passenger_name = Column(String(200))
     passenger_age = Column(Integer)
+
+
+Base.metadata.create_all(engine)
